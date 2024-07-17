@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
-  Number: {
+  number: {
     type: Number,
     require: true,
     unique: true,
@@ -12,7 +12,7 @@ const UserSchema = new Schema({
     require: true,
     unique: true,
   },
-  pin: {
+  pin: { 
     type: Number,
     require: true,
     length: 5,
