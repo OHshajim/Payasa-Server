@@ -13,10 +13,10 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json())
-app.use('/auth',Authentication)
+app.use('/authentication',Authentication)
 
 
-// server running test
+// server running test 
 app.get('/', (req, res) => {
     res.send('Payasa server running ...')
 })

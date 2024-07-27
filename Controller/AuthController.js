@@ -1,6 +1,6 @@
-const UserModel = require("../Models/User");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const UserModel = require("../Models/User");
 
 const registration = async (req, res) => {
   try {
@@ -8,24 +8,44 @@ const registration = async (req, res) => {
     const userEmail = await UserModel.findOne({ email });
     const userNumber = await UserModel.findOne({ number });
     if (userEmail || userNumber) {
+      console.log("already access");
       return res
         .status(409)
         .json({ message: "user Already exist !!!", success: false });
     }
     const NewUser = new UserModel({ number, email, pin });
     NewUser.pin = await bcrypt.hash(pin, 10);
+
+    const jwtToken = jwt.sign(
+      {
+        email: email,
+        number: number,
+        _id: NewUser._id,
+      },
+      process.env.SECRET_KEY,
+      { expiresIn: "100h" }
+    );
+    console.log(jwtToken, NewUser);
+    // save data
     await NewUser.save();
-    res
-      .status(201)
-      .json({ message: "User successfully created", success: true });
+    res.status(201).json({
+      message: "User successfully created",
+      success: true,
+      access_token: jwtToken,
+      email: NewUser.email,
+      number: NewUser.number,
+      id: NewUser._id,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server error", success: false });
+    return res
+      .status(500)
+      .json({ message: "Internal Server error", success: false });
   }
 };
 
 const Login = async (req, res) => {
   try {
-    const { number, email, pin } = req.body;
+    const { number,  pin } = req.body;
     const user = await UserModel.findOne({ number });
     if (!user) {
       return res.status(403).json({
@@ -37,7 +57,7 @@ const Login = async (req, res) => {
     const pinValidate = await bcrypt.compare(pin, user.pin);
     if (!pinValidate) {
       return res.status(403).json({
-        message: "Please remember your account pin !!!",
+        message: "Please remember your account pin , Try again !!!",
         success: false,
       });
     }
@@ -50,7 +70,7 @@ const Login = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "100h" }
     );
-    res.status(201).json({
+    res.status(200).json({
       message: "User successfully Login",
       success: true,
       access_token: jwtToken,
@@ -58,7 +78,9 @@ const Login = async (req, res) => {
       number: user.number,
     });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server error", success: false });
+    return res
+      .status(500)
+      .json({ message: "Internal Server error", success: false });
   }
 };
 

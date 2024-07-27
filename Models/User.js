@@ -12,12 +12,12 @@ const UserSchema = new Schema({
     require: true,
     unique: true,
   },
-  pin: { 
-    type: Number,
+  pin: {
+    type: String,
     require: true,
     length: 5,
   },
 });
 
-const UserModel = mongoose.model('Users',UserSchema);
-module.exports= UserModel;
+const UserModel = mongoose.model("users", UserSchema);
+module.exports = UserModel;
