@@ -14,12 +14,30 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use("/authentication", Authentication);
 
+app.get("/userDetails/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  const result = await UserModel.findOne({ _id: id });
+  const user = {
+    number: result.number,
+    email: result.email,
+    status: result.status,
+    balance: result.balance,
+  };
+  res.send(user);
+});
 
 app.get("/numberValidate/:number", async (req, res) => {
   const { number } = req.params;
   console.log(number);
-  const result =await UserModel.findOne({ number: number });
-  result? res.send({message:"User A/C is Valid",success:true,number:result.number}):res.send({success:false , message: "This user A/C is not valid !!!"})
+  const result = await UserModel.findOne({ number: number });
+  result
+    ? res.send({
+        message: "User A/C is Valid",
+        success: true,
+        number: result.number,
+      })
+    : res.send({ success: false, message: "This user A/C is not valid !!!" });
 });
 
 // server running test

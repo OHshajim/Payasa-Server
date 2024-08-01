@@ -33,14 +33,13 @@ const registration = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "20min" }
     );
-    console.log(NewUser);
     // save data
     await NewUser.save();
     res.status(201).json({
       message: "User successfully created",
       success: true,
       access_token: jwtToken,
-      user: NewUser,
+      userID: NewUser._id,
     });
   } catch (error) {
     return res
@@ -80,7 +79,7 @@ const Login = async (req, res) => {
       message: "User successfully Login",
       success: true,
       access_token: jwtToken,
-      user: user,
+      userID: user._id,
     });
   } catch (error) {
     return res
