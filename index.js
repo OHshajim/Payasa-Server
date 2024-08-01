@@ -1,18 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const bodyParser = require("body-parser");
 require("./Models/db");
-const Authentication = require("./Router/Authentication");
-const UserModel = require("./Models/User");
+const bodyParser = require("body-parser");
 const app = express();
 const port = process.env.PORT || 5000;
+const UserModel = require("./Models/User");
+const Authentication = require("./Router/Authentication");
 
 // middleware
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use("/authentication", Authentication);
+
 
 app.get("/numberValidate/:number", async (req, res) => {
   const { number } = req.params;

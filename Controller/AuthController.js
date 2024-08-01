@@ -7,13 +7,21 @@ const registration = async (req, res) => {
     const { number, email, pin } = req.body;
     const userEmail = await UserModel.findOne({ email });
     const userNumber = await UserModel.findOne({ number });
+    const status = "Pending",
+      balance = 0;
     if (userEmail || userNumber) {
       console.log("already access");
       return res
         .status(409)
         .json({ message: "user Already exist !!!", success: false });
     }
-    const NewUser = new UserModel({ number, email, pin });
+    const NewUser = new UserModel({
+      number,
+      email,
+      pin,
+      status,
+      balance,
+    });
     NewUser.pin = await bcrypt.hash(pin, 10);
 
     const jwtToken = jwt.sign(
@@ -23,18 +31,16 @@ const registration = async (req, res) => {
         _id: NewUser._id,
       },
       process.env.SECRET_KEY,
-      { expiresIn: "100h" }
+      { expiresIn: "20min" }
     );
-    console.log(jwtToken, NewUser);
+    console.log(NewUser);
     // save data
     await NewUser.save();
     res.status(201).json({
       message: "User successfully created",
       success: true,
       access_token: jwtToken,
-      email: NewUser.email,
-      number: NewUser.number,
-      id: NewUser._id,
+      user: NewUser,
     });
   } catch (error) {
     return res
@@ -45,7 +51,7 @@ const registration = async (req, res) => {
 
 const Login = async (req, res) => {
   try {
-    const { number,  pin } = req.body;
+    const { number, pin } = req.body;
     const user = await UserModel.findOne({ number });
     if (!user) {
       return res.status(403).json({
@@ -68,14 +74,13 @@ const Login = async (req, res) => {
         _id: user._id,
       },
       process.env.SECRET_KEY,
-      { expiresIn: "100h" }
+      { expiresIn: "20min" }
     );
     res.status(200).json({
       message: "User successfully Login",
       success: true,
       access_token: jwtToken,
-      email: user.email,
-      number: user.number,
+      user: user,
     });
   } catch (error) {
     return res

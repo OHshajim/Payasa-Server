@@ -1,3 +1,4 @@
+const { number } = require("joi");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -16,6 +17,12 @@ const UserSchema = new Schema({
     type: String,
     require: true,
     length: 5,
+  },
+  status: {
+    type: String,
+  },
+  balance: {
+    type: Number,
   },
 });
 
