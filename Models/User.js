@@ -26,5 +26,31 @@ const UserSchema = new Schema({
   },
 });
 
+const AccountHistory = new Schema({
+  Service: {
+    type: String,
+    require: true,
+  },
+  From: {
+    type: Number,
+    require: true,
+    unique: true,
+  },
+  To: {
+    type: Number,
+    require: true,
+    unique: true,
+  },
+  Date: {
+    type: String,
+    require: true,
+  },
+  Amount: {
+    type: Number,
+    require: true
+  },
+});
+
 const UserModel = mongoose.model("users", UserSchema);
-module.exports = UserModel;
+const HistoryModel = mongoose.model("histories", AccountHistory);
+module.exports = { UserModel, HistoryModel };

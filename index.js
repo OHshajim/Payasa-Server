@@ -5,8 +5,9 @@ require("./Models/db");
 const bodyParser = require("body-parser");
 const app = express();
 const port = process.env.PORT || 5000;
-const UserModel = require("./Models/User");
+const { UserModel, HistoryModel } = require("./Models/User");
 const Authentication = require("./Router/Authentication");
+const TokenValidate = require("./Middleware/TokenValidate");
 
 // middleware
 app.use(cors());
@@ -38,6 +39,37 @@ app.get("/numberValidate/:number", async (req, res) => {
         number: result.number,
       })
     : res.send({ success: false, message: "This user A/C is not valid !!!" });
+});
+
+app.post("/sendmoney/:number", async (req, res) => {
+  const { number } = req.params;
+  const user = req.body;
+  const receiverNumber = user.number;
+  const amount = parseFloat(user.amount);
+  const from = await UserModel.findOne({ number: number });
+  const to = await UserModel.findOne({ number: receiverNumber });
+  const fromDocument = {
+    $inc: {
+      balance: -amount,
+    },
+  };
+  const toDocument = {
+    $inc: {
+      balance: amount,
+    },
+  };
+  const From = await UserModel.updateOne({ _id: from._id }, fromDocument);
+  const To = await UserModel.updateOne({ _id: to._id }, toDocument);
+  const statement = {
+    Service: "Send Money",
+    From: from.number,
+    To: to.number,
+    Date: Date(),
+    Amount: amount,
+  };
+  const result = await HistoryModel.create(statement)
+  console.log(result , From , To);
+  
 });
 
 // server running test
