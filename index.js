@@ -60,16 +60,21 @@ app.post("/sendmoney/:number", async (req, res) => {
   };
   const From = await UserModel.updateOne({ _id: from._id }, fromDocument);
   const To = await UserModel.updateOne({ _id: to._id }, toDocument);
-  const statement = {
+  console.log(To, From);
+
+  const statement = new HistoryModel({
     Service: "Send Money",
     From: from.number,
     To: to.number,
     Date: Date(),
     Amount: amount,
-  };
-  const result = await HistoryModel.create(statement)
-  console.log(result , From , To);
+  });
+  console.log(statement);
   
+  if (To.modifiedCount && From.modifiedCount) {
+    const result = await statement.save()
+    console.log(result);
+  }
 });
 
 // server running test

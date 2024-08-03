@@ -1,4 +1,3 @@
-const { number } = require("joi");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -34,12 +33,10 @@ const AccountHistory = new Schema({
   From: {
     type: Number,
     require: true,
-    unique: true,
   },
   To: {
     type: Number,
     require: true,
-    unique: true,
   },
   Date: {
     type: String,
