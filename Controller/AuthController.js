@@ -58,6 +58,7 @@ const Login = async (req, res) => {
         success: false,
       });
     }
+    console.log(user);
 
     const pinValidate = await bcrypt.compare(pin, user.pin);
     if (!pinValidate) {
