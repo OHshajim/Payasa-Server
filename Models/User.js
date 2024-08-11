@@ -9,7 +9,6 @@ const UserSchema = new Schema({
   },
   email: {
     type: String,
-    require: true,
     unique: true,
   },
   pin: {
@@ -25,29 +24,5 @@ const UserSchema = new Schema({
   },
 });
 
-const AccountHistory = new Schema({
-  Service: {
-    type: String,
-    require: true,
-  },
-  From: {
-    type: Number,
-    require: true,
-  },
-  To: {
-    type: Number,
-    require: true,
-  },
-  Date: {
-    type: String,
-    require: true,
-  },
-  Amount: {
-    type: Number,
-    require: true
-  },
-});
-
 const UserModel = mongoose.model("users", UserSchema);
-const HistoryModel = mongoose.model("histories", AccountHistory);
-module.exports = { UserModel, HistoryModel };
+module.exports = UserModel;

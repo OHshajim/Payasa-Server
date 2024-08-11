@@ -33,7 +33,7 @@ const registration = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "20min" }
     );
-    // save data
+
     await NewUser.save();
     res.status(201).json({
       message: "User successfully created",
@@ -58,8 +58,6 @@ const Login = async (req, res) => {
         success: false,
       });
     }
-    console.log(user);
-
     const pinValidate = await bcrypt.compare(pin, user.pin);
     if (!pinValidate) {
       return res.status(403).json({
