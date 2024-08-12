@@ -44,40 +44,90 @@ app.get("/numberValidate/:number", async (req, res) => {
 });
 
 app.post("/moneyTransfer/:number", async (req, res) => {
-  const { number } = req.params;
-  const user = req.body;
-  const receiverNumber = user.number;
-  const amount = parseFloat(user.amount);
-  const Charge = parseFloat(user.charge);
-  const from = await UserModel.findOne({ number: number });
-  const to = await UserModel.findOne({ number: receiverNumber });
-  const fromDocument = {
-    $inc: {
-      balance: -(amount + Charge),
-    },
-  };
-  const toDocument = {
-    $inc: {
-      balance: amount + Charge,
-    },
-  };
-  const From = await UserModel.updateOne({ _id: from._id }, fromDocument);
-  const To = await UserModel.updateOne({ _id: to._id }, toDocument);
-  console.log(To, From);
+  try {
+    const { number } = req.params;
+    const user = req.body;
+    const receiverNumber = user.number;
+    const amount = parseFloat(user.amount);
+    const charge = parseFloat(user.charge);
 
-  const statement = new HistoryModel({
-    Service: user.service,
-    From: from.number,
-    To: to.number,
-    Date: Date(),
-    Amount: amount,
-    Charge: Charge,
-  });
-  console.log(statement);
+    // Find sender and receiver
+    const from = await UserModel.findOne({ number });
+    const to = await UserModel.findOne({ number: receiverNumber });
 
-  if (To.modifiedCount && From.modifiedCount) {
-    const result = await statement.save();
-    console.log(result);
+    if (!from || !to) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Check if sender has enough balance
+    if (from.balance < amount + charge) {
+      return res.status(400).json({
+        message: "Insufficient balance",
+        success: false,
+      });
+    }
+
+    const fromDocument = {
+      $inc: {
+        balance: -(amount + charge),
+      },
+    };
+
+    let toDocument;
+    if (user.service === "Send Money") {
+      toDocument = {
+        $inc: {
+          balance: amount,
+        },
+      };
+    } else {
+      toDocument = {
+        $inc: {
+          balance: amount + charge,
+        },
+      };
+    }
+
+    const fromUpdate = await UserModel.updateOne(
+      { _id: from._id },
+      fromDocument
+    );
+
+    const toUpdate = await UserModel.updateOne({ _id: to._id }, toDocument);
+    console.log(fromUpdate, toUpdate);
+    const statement = new HistoryModel({
+      Service: user.service,
+      From: from.number,
+      To: to.number,
+      Date: new Date(),
+      Amount: amount,
+      Charge: charge,
+    });
+    console.log(statement);
+
+    if (fromUpdate.modifiedCount && toUpdate.modifiedCount) {
+      console.log("condition true");
+
+      await statement.save();
+      res.status(201).json({
+        message: "Successfully Transferred",
+        success: true,
+      });
+    } else {
+      res.status(500).json({
+        message: "Transfer failed",
+        success: false,
+      });zzzzzzzzz
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+      success: false,
+      error: error.message,
+    });
   }
 });
 
