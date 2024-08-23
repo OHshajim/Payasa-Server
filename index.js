@@ -9,6 +9,7 @@ const UserModel = require("./Models/User");
 const HistoryModel = require("./Models/History");
 const Authentication = require("./Router/Authentication");
 const TokenValidate = require("./Middleware/TokenValidate");
+const RequestModel = require("./Models/MoneyRequest");
 
 // middleware
 app.use(cors());
@@ -120,7 +121,8 @@ app.post("/moneyTransfer/:number", async (req, res) => {
       res.status(500).json({
         message: "Transfer failed",
         success: false,
-      });zzzzzzzzz
+      });
+      zzzzzzzzz;
     }
   } catch (error) {
     res.status(500).json({
@@ -131,6 +133,24 @@ app.post("/moneyTransfer/:number", async (req, res) => {
   }
 });
 
+app.post("/addMoney/:number", async (req, res) => {
+  const user = req.body;
+  const To = req.params;
+  console.log(user, To);
+  const RequestData = await RequestModel({
+    To: To.number,
+    From: user.number,
+    Date: new Date(),
+    Amount: user.amount,
+    Status: "Pending",
+  });
+  console.log(RequestData);
+  await RequestData.save();
+  res.status(201).json({
+    message: "Request Send successfully",
+    success: true,
+  });
+});
 // server running test
 app.get("/", (req, res) => {
   res.send("Payasa server running ...");
