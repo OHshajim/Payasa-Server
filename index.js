@@ -44,6 +44,16 @@ app.get("/numberValidate/:number", async (req, res) => {
     : res.send({ success: false, message: "This user A/C is not valid !!!" });
 });
 
+// Agent
+app.get("/addMoneyRequests/:number", async (req, res) => {
+  const { number } = req.params;
+  console.log(number);
+  const result = await RequestModel.find({ number: number });
+  result
+    ? res.send(result)
+    : res.send({ success: false, message: "Server error!" });
+});
+
 app.post("/moneyTransfer/:number", async (req, res) => {
   try {
     const { number } = req.params;
@@ -151,6 +161,7 @@ app.post("/addMoney/:number", async (req, res) => {
     success: true,
   });
 });
+
 // server running test
 app.get("/", (req, res) => {
   res.send("Payasa server running ...");
