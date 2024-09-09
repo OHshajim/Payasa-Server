@@ -164,8 +164,23 @@ app.post("/addMoney/:number", async (req, res) => {
 
 // Admin
 app.get("/allUsers", async (req, res) => {
-  const result = await UserModel.find()
-  res.send(result).status(200);
+  const { query, search } = req.query;
+  if (query) {
+    const result = await UserModel.find({ status: query });
+    return res.send(result).status(200);
+  } 
+  else if (search) {
+    const result = await UserModel.find({
+      number: { $regex: search, $options: "i" },
+    });
+    return res.send(result).status(200);
+  }
+   else {
+    const result = await UserModel.find();
+    res.send(result).status(200);
+  }
+
+  // const result = await UserModel.find();
 });
 
 // server running test
