@@ -163,10 +163,11 @@ app.post("/addMoney/:number", async (req, res) => {
 });
 
 // Admin
-app.get("allUsers", async (req, res) => {
-  const result = (await UserModel.find()).toString();
-  res.json(result).status(200);
+app.get("/allUsers", async (req, res) => {
+  const result = await UserModel.find()
+  res.send(result).status(200);
 });
+
 // server running test
 app.get("/", (req, res) => {
   res.send("Payasa server running ...");
