@@ -163,9 +163,9 @@ app.post("/addMoney/:number", async (req, res) => {
 });
 
 // Admin
-app.get("/allUsers", async (req, res) => {
+app.get("/allUsers", async (req, res)=>{
   const { query, search } = req.query;
-  if (query) {
+  if (query && query !=="") {
     const result = await UserModel.find({ status: query });
     return res.send(result).status(200);
   } 
@@ -179,8 +179,6 @@ app.get("/allUsers", async (req, res) => {
     const result = await UserModel.find();
     res.send(result).status(200);
   }
-
-  // const result = await UserModel.find();
 });
 
 // server running test
