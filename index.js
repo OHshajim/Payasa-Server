@@ -202,15 +202,17 @@ app.get("/StatsInfo", async (req, res) => {
 
     const todayTotalAmount =
       todayTotalResult.length > 0 ? todayTotalResult[0].totalAmount : 0;
-    const totalGeneralUsers =await  UserModel.countDocuments({ status: "General" });
-    const totalAgentUsers =await  UserModel.countDocuments({ status: "Agent" });
-
-    res.json({
-      totalAmount: totalAmount,
-      todayTotalAmount: todayTotalAmount,
-      GeneralUsers:totalGeneralUsers,
-      AgentUsers:totalAgentUsers,
+    const totalGeneralUsers = await UserModel.countDocuments({
+      status: "General",
     });
+    const totalAgentUsers = await UserModel.countDocuments({ status: "Agent" });
+
+    res.json([
+      {id:1, name:"Total Transactions", number: `${totalAmount} $` },
+      {id:2, name:"Daily Transactions", number: `${todayTotalAmount} $` },
+      {id:3, name:"General Customers", number: totalGeneralUsers },
+      {id:4, name:"Agents", number: totalAgentUsers },
+    ]);
   } catch (err) {
     console.error("Error fetching stats:", err);
     res.status(500).json({ error: "An error occurred while fetching stats" });
