@@ -19,7 +19,7 @@ app.use("/authentication", Authentication);
 
 app.get("/userDetails/:id", async (req, res) => {
   const { id } = req.params;
-  console.log(id);
+  // console.log(id);
   const result = await UserModel.findOne({ _id: id });
   const user = {
     number: result.number,
@@ -163,26 +163,63 @@ app.post("/addMoney/:number", async (req, res) => {
 });
 
 // Admin
-app.get("/allUsers", async (req, res)=>{
-  const { query, search } = req.query;
-  if (query && query !=="") {
-    const result = await UserModel.find({ status: query });
-    return res.send(result).status(200);
-  } 
-  else if (search) {
-    const result = await UserModel.find({
-      number: { $regex: search, $options: "i" },
+app.get("/StatsInfo", async (req, res) => {
+  try {
+    const totalAmountResult = await HistoryModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$Amount" },
+        },
+      },
+    ]);
+
+    const totalAmount =
+      totalAmountResult.length > 0 ? totalAmountResult[0].totalAmount : 0;
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setDate(endOfToday.getDate() + 1);
+
+    const todayTotalResult = await HistoryModel.aggregate([
+      {
+        $match: {
+          Date: {
+            $gte: startOfToday,
+            $lt: endOfToday,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$Amount" },
+        },
+      },
+    ]);
+
+    const todayTotalAmount =
+      todayTotalResult.length > 0 ? todayTotalResult[0].totalAmount : 0;
+    const totalGeneralUsers =await  UserModel.countDocuments({ status: "General" });
+    const totalAgentUsers =await  UserModel.countDocuments({ status: "Agent" });
+
+    res.json({
+      totalAmount: totalAmount,
+      todayTotalAmount: todayTotalAmount,
+      GeneralUsers:totalGeneralUsers,
+      AgentUsers:totalAgentUsers,
     });
-    return res.send(result).status(200);
-  }
-   else {
-    const result = await UserModel.find();
-    res.send(result).status(200);
+  } catch (err) {
+    console.error("Error fetching stats:", err);
+    res.status(500).json({ error: "An error occurred while fetching stats" });
   }
 });
 
 // server running test
 app.get("/", (req, res) => {
+  S;
   res.send("Payasa server running ...");
 });
 
