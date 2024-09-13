@@ -44,7 +44,6 @@ app.get("/numberValidate/:number", async (req, res) => {
     : res.send({ success: false, message: "This user A/C is not valid !!!" });
 });
 
-// Agent
 app.get("/addMoneyRequests/:number", async (req, res) => {
   const { number } = req.params;
   console.log(number);
@@ -208,10 +207,10 @@ app.get("/StatsInfo", async (req, res) => {
     const totalAgentUsers = await UserModel.countDocuments({ status: "Agent" });
 
     res.json([
-      {id:1, name:"Total Transactions", number: `${totalAmount} $` },
-      {id:2, name:"Daily Transactions", number: `${todayTotalAmount} $` },
-      {id:3, name:"General Customers", number: totalGeneralUsers },
-      {id:4, name:"Agents", number: totalAgentUsers },
+      { id: 1, name: "Total Transactions", number: `${totalAmount} $` },
+      { id: 2, name: "Daily Transactions", number: `${todayTotalAmount} $` },
+      { id: 3, name: "General Customers", number: totalGeneralUsers },
+      { id: 4, name: "Agents", number: totalAgentUsers },
     ]);
   } catch (err) {
     console.error("Error fetching stats:", err);
@@ -219,9 +218,23 @@ app.get("/StatsInfo", async (req, res) => {
   }
 });
 
+app.get("/chartOfServices", async (req, res) => {
+  const totalSendMoney = await HistoryModel.countDocuments({
+    Status: "Send Money",
+  });
+  const totalCashOut = await HistoryModel.countDocuments({
+    Status: "Cash Out",
+  });
+  const totalCashIn = await HistoryModel.countDocuments({ Status: "Cash In" });
+  res.send({
+    totalSendMoney: totalSendMoney,
+    totalCashOut: totalCashOut,
+    totalCashIn: totalCashIn,
+  }).status(200);
+});
+
 // server running test
 app.get("/", (req, res) => {
-  S;
   res.send("Payasa server running ...");
 });
 
