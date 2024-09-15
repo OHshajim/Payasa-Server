@@ -244,6 +244,17 @@ app.get("/AllTransactions", async (req, res) => {
     res.send(result);
   }
 });
+app.get("/AllUsers", async (req, res) => {
+  const { service } = req.query;
+  console.log(service);
+  if (service === " ") {
+    const result = await UserModel.find();
+    res.send(result);
+  } else {
+    const result = await UserModel.find({ Service: service });
+    res.send(result);
+  }
+});
 
 // server running test
 app.get("/", (req, res) => {
