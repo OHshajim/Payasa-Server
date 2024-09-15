@@ -230,7 +230,19 @@ app.get("/chartOfServices", async (req, res) => {
     totalSendMoney: totalSendMoney,
     totalCashOut: totalCashOut,
     totalCashIn: totalCashIn,
-  }).status(200);
+  });
+});
+
+app.get("/AllTransactions", async (req, res) => {
+  const { service } = req.query;
+  console.log(service);
+  if (service === "All") {
+    const result = await HistoryModel.find();
+    res.send(result);
+  } else {
+    const result = await HistoryModel.find({ Service: service });
+    res.send(result);
+  }
 });
 
 // server running test
