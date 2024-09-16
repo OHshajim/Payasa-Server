@@ -6,6 +6,7 @@ const RegistrationValidate = (req, res, next) => {
     email: joi.string().email().required(),
     pin: joi.number().required(),
     status: joi.string(),
+    date: joi.string(),
     balance: joi.number(),
   });
   const { error } = schema.validate(req.body);

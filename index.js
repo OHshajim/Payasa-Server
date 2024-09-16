@@ -105,6 +105,8 @@ app.post("/moneyTransfer/:number", async (req, res) => {
       { _id: from._id },
       fromDocument
     );
+    const date = new Date();
+    const formattedDate = date.toLocaleDateString("en-US");
 
     const toUpdate = await UserModel.updateOne({ _id: to._id }, toDocument);
     console.log(fromUpdate, toUpdate);
@@ -112,7 +114,7 @@ app.post("/moneyTransfer/:number", async (req, res) => {
       Service: user.service,
       From: from.number,
       To: to.number,
-      Date: new Date(),
+      Date: formattedDate,
       Amount: amount,
       Charge: charge,
     });
@@ -131,7 +133,6 @@ app.post("/moneyTransfer/:number", async (req, res) => {
         message: "Transfer failed",
         success: false,
       });
-      zzzzzzzzz;
     }
   } catch (error) {
     res.status(500).json({
@@ -145,11 +146,13 @@ app.post("/moneyTransfer/:number", async (req, res) => {
 app.post("/addMoney/:number", async (req, res) => {
   const user = req.body;
   const To = req.params;
-  console.log(user, To);
+  const date = new Date();
+  const formattedDate = date.toLocaleDateString("en-US");
+
   const RequestData = await RequestModel({
     To: To.number,
     From: user.number,
-    Date: new Date(),
+    Date: formattedDate,
     Amount: user.amount,
     Status: "Pending",
   });
@@ -207,8 +210,8 @@ app.get("/StatsInfo", async (req, res) => {
     const totalAgentUsers = await UserModel.countDocuments({ status: "Agent" });
 
     res.json([
-      { id: 1, name: "Total Transactions", number: `${totalAmount} $` },
-      { id: 2, name: "Daily Transactions", number: `${todayTotalAmount} $` },
+      { id: 1, name: "Total Transactions", number: totalAmount },
+      { id: 2, name: "Daily Transactions", number: todayTotalAmount },
       { id: 3, name: "General Customers", number: totalGeneralUsers },
       { id: 4, name: "Agents", number: totalAgentUsers },
     ]);
@@ -235,7 +238,6 @@ app.get("/chartOfServices", async (req, res) => {
 
 app.get("/AllTransactions", async (req, res) => {
   const { service } = req.query;
-  console.log(service);
   if (service === "All") {
     const result = await HistoryModel.find();
     res.send(result);
@@ -247,11 +249,23 @@ app.get("/AllTransactions", async (req, res) => {
 app.get("/AllUsers", async (req, res) => {
   const { service } = req.query;
   console.log(service);
-  if (service === " ") {
+  if (service === "All") {
     const result = await UserModel.find();
     res.send(result);
   } else {
     const result = await UserModel.find({ Service: service });
+    res.send(result);
+  }
+});
+
+app.get("/AllRequests", async (req, res) => {
+  const { service } = req.query;
+  console.log(service);
+  if (service === "All") {
+    const result = await RequestModel.find();
+    res.send(result);
+  } else {
+    const result = await RequestModel.find({ Service: service });
     res.send(result);
   }
 });

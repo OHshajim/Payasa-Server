@@ -15,11 +15,15 @@ const registration = async (req, res) => {
         .status(409)
         .json({ message: "user Already exist !!!", success: false });
     }
+    const date = new Date();
+    const formattedDate = date.toLocaleDateString("en-US");
+
     const NewUser = new UserModel({
       number,
       email,
       pin,
       status,
+      date: formattedDate,
       balance,
     });
     NewUser.pin = await bcrypt.hash(pin, 10);

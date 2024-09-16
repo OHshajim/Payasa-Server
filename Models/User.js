@@ -19,6 +19,9 @@ const UserSchema = new Schema({
   status: {
     type: String,
   },
+  date:{
+    type:String,
+  },
   balance: {
     type: Number,
   },
