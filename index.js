@@ -208,8 +208,20 @@ app.patch("/RequestConfirmation:id", async (req, res) => {
     await statement.save();
     const request = await RequestModel.updateOne({ _id: id }, updateDocument);
     res.send({ message: "Request successfully confirmed !!!" }).status(200);
-  }else{
-    res.send({message:"Something Gone Wrong!!!"}).status(500)
+  } else {
+    res.send({ message: "Something Gone Wrong!!!" }).status(500);
+  }
+});
+
+// RequestDelete money request
+app.delete("/RequestDelete:id", async (req, res) => {
+  const { id } = req.params;
+  const result = await RequestModel.deleteOne({ _id: id });
+  if (result.deletedCount) {
+    res.status(201).json({
+      message: "Request successfully deleted",
+      success: true,
+    });
   }
 });
 
