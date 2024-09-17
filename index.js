@@ -143,25 +143,74 @@ app.post("/moneyTransfer/:number", async (req, res) => {
   }
 });
 
+// Add money
 app.post("/addMoney/:number", async (req, res) => {
   const user = req.body;
-  const To = req.params;
+  const From = req.params;
   const date = new Date();
   const formattedDate = date.toLocaleDateString("en-US");
 
   const RequestData = await RequestModel({
-    To: To.number,
-    From: user.number,
+    From: From.number,
+    To: user.number,
     Date: formattedDate,
     Amount: user.amount,
     Status: "Pending",
   });
-  console.log(RequestData);
   await RequestData.save();
   res.status(201).json({
     message: "Request Send successfully",
     success: true,
   });
+});
+
+// add money confirmation
+app.patch("/RequestConfirmation:id", async (req, res) => {
+  const { id } = req.params;
+  const date = new Date();
+  const formattedDate = date.toLocaleDateString("en-US");
+  const dataOfRequest = await RequestModel.findOne({ _id: id });
+
+  const receiverAccountUpdate = {
+    $inc: {
+      balance: dataOfRequest.Amount,
+    },
+  };
+  const sendingAccountUpdate = {
+    $inc: {
+      balance: -dataOfRequest.Amount,
+    },
+  };
+
+  const sendingAccountSave = await UserModel.updateOne(
+    { number: dataOfRequest.To },
+    sendingAccountUpdate
+  );
+  const receiverAccountSave = await UserModel.updateOne(
+    { number: dataOfRequest.From },
+    receiverAccountUpdate
+  );
+
+  const statement = new HistoryModel({
+    Service: "Add Money",
+    From: dataOfRequest.To,
+    To: dataOfRequest.From,
+    Date: formattedDate,
+    Amount: dataOfRequest.Amount,
+    Charge: 0,
+  });
+  const updateDocument = {
+    $set: {
+      Status: "Confirmed",
+    },
+  };
+  if (sendingAccountSave.modifiedCount && receiverAccountSave.modifiedCount) {
+    await statement.save();
+    const request = await RequestModel.updateOne({ _id: id }, updateDocument);
+    res.send({ message: "Request successfully confirmed !!!" }).status(200);
+  }else{
+    res.send({message:"Something Gone Wrong!!!"}).status(500)
+  }
 });
 
 // Admin
