@@ -7,8 +7,8 @@ const registration = async (req, res) => {
     const { number, email, pin } = req.body;
     const userEmail = await UserModel.findOne({ email });
     const userNumber = await UserModel.findOne({ number });
-    const status = "Pending",
-      balance = 0;
+    const status = "General",
+      balance = 50;
     if (userEmail || userNumber) {
       console.log("already access");
       return res

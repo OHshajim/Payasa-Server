@@ -19,7 +19,6 @@ app.use("/authentication", Authentication);
 
 app.get("/userDetails/:id", async (req, res) => {
   const { id } = req.params;
-  // console.log(id);
   const result = await UserModel.findOne({ _id: id });
   const user = {
     number: result.number,
@@ -218,7 +217,7 @@ app.delete("/RequestDelete:id", async (req, res) => {
   const { id } = req.params;
   const result = await RequestModel.deleteOne({ _id: id });
   if (result.deletedCount) {
-    res.status(201).json({
+    res.status(200).json({
       message: "Request successfully deleted",
       success: true,
     });
@@ -227,59 +226,30 @@ app.delete("/RequestDelete:id", async (req, res) => {
 
 // Admin
 app.get("/StatsInfo", async (req, res) => {
-  try {
-    const totalAmountResult = await HistoryModel.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: "$Amount" },
-        },
+  const totalAmountResult = await HistoryModel.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalAmount: { $sum: "$Amount" },
       },
-    ]);
+    },
+  ]);
 
-    const totalAmount =
-      totalAmountResult.length > 0 ? totalAmountResult[0].totalAmount : 0;
+  const totalAmount =
+    totalAmountResult.length > 0 ? totalAmountResult[0].totalAmount : 0;
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+  const NumberOfTransaction = await HistoryModel.countDocuments();
+  const totalGeneralUsers = await UserModel.countDocuments({
+    status: "General",
+  });
+  const totalAgentUsers = await UserModel.countDocuments({ status: "Agent" });
 
-    const endOfToday = new Date(startOfToday);
-    endOfToday.setDate(endOfToday.getDate() + 1);
-
-    const todayTotalResult = await HistoryModel.aggregate([
-      {
-        $match: {
-          Date: {
-            $gte: startOfToday,
-            $lt: endOfToday,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: "$Amount" },
-        },
-      },
-    ]);
-
-    const todayTotalAmount =
-      todayTotalResult.length > 0 ? todayTotalResult[0].totalAmount : 0;
-    const totalGeneralUsers = await UserModel.countDocuments({
-      status: "General",
-    });
-    const totalAgentUsers = await UserModel.countDocuments({ status: "Agent" });
-
-    res.json([
-      { id: 1, name: "Total Transactions", number: totalAmount },
-      { id: 2, name: "Daily Transactions", number: todayTotalAmount },
-      { id: 3, name: "General Customers", number: totalGeneralUsers },
-      { id: 4, name: "Agents", number: totalAgentUsers },
-    ]);
-  } catch (err) {
-    console.error("Error fetching stats:", err);
-    res.status(500).json({ error: "An error occurred while fetching stats" });
-  }
+  res.json([
+    { id: 1, name: "Total Transactions", number: NumberOfTransaction },
+    { id: 2, name: "Total Transactions Amount", number: totalAmount },
+    { id: 3, name: "General Customers", number: totalGeneralUsers },
+    { id: 4, name: "Agents", number: totalAgentUsers },
+  ]);
 });
 
 app.get("/chartOfServices", async (req, res) => {
@@ -307,30 +277,72 @@ app.get("/AllTransactions", async (req, res) => {
     res.send(result);
   }
 });
+
 app.get("/AllUsers", async (req, res) => {
-  const { service } = req.query;
-  console.log(service);
-  if (service === "All") {
+  const { type } = req.query;
+  console.log(type);
+  if (type === "All") {
     const result = await UserModel.find();
     res.send(result);
   } else {
-    const result = await UserModel.find({ Service: service });
+    const result = await UserModel.find({ status: type });
     res.send(result);
   }
+});
+
+app.patch("/UpdateAccount:id", async (req, res) => {
+  const { id } = req.params;
+  const { type } = req.query;
+  let UpdatedDoc = {
+    $set: {
+      status: type == "General" ? "Agent" : "Admin",
+    },
+  };
+  if (type === "General") {
+    UpdatedDoc = {
+      $set: {
+        status: type == "General" ? "Agent" : "Admin",
+      },
+      $inc: {
+        balance: 20000,
+      },
+    };
+  }
+
+  const result = await UserModel.updateOne({ _id: id }, UpdatedDoc);
+  res.send({ message: "Successfully Updated this Account" }).status(200);
+});
+
+app.delete("/DeleteClient:id", async (req, res) => {
+  const { id } = req.params;
+  const result = await UserModel.deleteOne({ _id: id });
+  res.send({ message: "Successfully deleted this Account " }).status(200);
 });
 
 app.get("/AllRequests", async (req, res) => {
-  const { service } = req.query;
-  console.log(service);
-  if (service === "All") {
+  const { filter } = req.query;
+  if (filter === "All") {
     const result = await RequestModel.find();
     res.send(result);
   } else {
-    const result = await RequestModel.find({ Service: service });
+    const result = await RequestModel.find({ Status: filter });
     res.send(result);
   }
 });
+// For Agent
 
+app.get("/AgentRequests:number", async (req, res) => {
+  const { number } = req.params;
+  const { filter } = req.query;
+
+  if (filter === "All") {
+    const result = await RequestModel.find({ To: number });
+    res.send(result);
+  } else {
+    const result = await RequestModel.find({ Status: filter ,To: number });
+    res.send(result);
+  }
+});
 // server running test
 app.get("/", (req, res) => {
   res.send("Payasa server running ...");
