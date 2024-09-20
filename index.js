@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use("/authentication", Authentication);
 
-app.get("/userDetails/:id", async (req, res) => {
+app.get("/userDetails/:id", TokenValidate, async (req, res) => {
   const { id } = req.params;
   const result = await UserModel.findOne({ _id: id });
   const user = {
@@ -29,7 +29,7 @@ app.get("/userDetails/:id", async (req, res) => {
   res.send(user);
 });
 
-app.get("/numberValidate/:number", async (req, res) => {
+app.get("/numberValidate/:number", TokenValidate, async (req, res) => {
   const { number } = req.params;
   console.log(number);
   const result = await UserModel.findOne({ number: number });
@@ -43,7 +43,7 @@ app.get("/numberValidate/:number", async (req, res) => {
     : res.send({ success: false, message: "This user A/C is not valid !!!" });
 });
 
-app.get("/addMoneyRequests/:number", async (req, res) => {
+app.get("/addMoneyRequests/:number", TokenValidate, async (req, res) => {
   const { number } = req.params;
   console.log(number);
   const result = await RequestModel.find({ number: number });
@@ -52,7 +52,7 @@ app.get("/addMoneyRequests/:number", async (req, res) => {
     : res.send({ success: false, message: "Server error!" });
 });
 
-app.post("/moneyTransfer/:number", async (req, res) => {
+app.post("/moneyTransfer/:number", TokenValidate, async (req, res) => {
   try {
     const { number } = req.params;
     const user = req.body;
@@ -143,12 +143,11 @@ app.post("/moneyTransfer/:number", async (req, res) => {
 });
 
 // Add money
-app.post("/addMoney/:number", async (req, res) => {
+app.post("/addMoney/:number", TokenValidate, async (req, res) => {
   const user = req.body;
   const From = req.params;
   const date = new Date();
   const formattedDate = date.toLocaleDateString("en-US");
-
   const RequestData = await RequestModel({
     From: From.number,
     To: user.number,
@@ -164,7 +163,7 @@ app.post("/addMoney/:number", async (req, res) => {
 });
 
 // add money confirmation
-app.patch("/RequestConfirmation:id", async (req, res) => {
+app.patch("/RequestConfirmation:id", TokenValidate, async (req, res) => {
   const { id } = req.params;
   const date = new Date();
   const formattedDate = date.toLocaleDateString("en-US");
@@ -213,7 +212,7 @@ app.patch("/RequestConfirmation:id", async (req, res) => {
 });
 
 // RequestDelete money request
-app.delete("/RequestDelete:id", async (req, res) => {
+app.delete("/RequestDelete:id", TokenValidate, async (req, res) => {
   const { id } = req.params;
   const result = await RequestModel.deleteOne({ _id: id });
   if (result.deletedCount) {
@@ -225,7 +224,7 @@ app.delete("/RequestDelete:id", async (req, res) => {
 });
 
 // Admin
-app.get("/StatsInfo", async (req, res) => {
+app.get("/StatsInfo", TokenValidate, async (req, res) => {
   const totalAmountResult = await HistoryModel.aggregate([
     {
       $group: {
@@ -252,7 +251,7 @@ app.get("/StatsInfo", async (req, res) => {
   ]);
 });
 
-app.get("/chartOfServices", async (req, res) => {
+app.get("/chartOfServices", TokenValidate, async (req, res) => {
   const totalSendMoney = await HistoryModel.countDocuments({
     Status: "Send Money",
   });
@@ -267,7 +266,7 @@ app.get("/chartOfServices", async (req, res) => {
   });
 });
 
-app.get("/AllTransactions", async (req, res) => {
+app.get("/AllTransactions", TokenValidate, async (req, res) => {
   const { service } = req.query;
   if (service === "All") {
     const result = await HistoryModel.find();
@@ -278,7 +277,7 @@ app.get("/AllTransactions", async (req, res) => {
   }
 });
 
-app.get("/AllUsers", async (req, res) => {
+app.get("/AllUsers", TokenValidate, async (req, res) => {
   const { type } = req.query;
   console.log(type);
   if (type === "All") {
@@ -290,7 +289,7 @@ app.get("/AllUsers", async (req, res) => {
   }
 });
 
-app.patch("/UpdateAccount:id", async (req, res) => {
+app.patch("/UpdateAccount/:id", TokenValidate, async (req, res) => {
   const { id } = req.params;
   const { type } = req.query;
   let UpdatedDoc = {
@@ -313,13 +312,15 @@ app.patch("/UpdateAccount:id", async (req, res) => {
   res.send({ message: "Successfully Updated this Account" }).status(200);
 });
 
-app.delete("/DeleteClient:id", async (req, res) => {
-  const { id } = req.params;
-  const result = await UserModel.deleteOne({ _id: id });
+app.delete("/DeleteClient/:id", TokenValidate, async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: ObjectId(id) };
+  
+  const result = await UserModel.deleteOne(query);
   res.send({ message: "Successfully deleted this Account " }).status(200);
 });
 
-app.get("/AllRequests", async (req, res) => {
+app.get("/AllRequests", TokenValidate, async (req, res) => {
   const { filter } = req.query;
   if (filter === "All") {
     const result = await RequestModel.find();
@@ -331,7 +332,7 @@ app.get("/AllRequests", async (req, res) => {
 });
 // For Agent
 
-app.get("/AgentRequests:number", async (req, res) => {
+app.get("/AgentRequests/:number", TokenValidate, async (req, res) => {
   const { number } = req.params;
   const { filter } = req.query;
 
@@ -339,7 +340,7 @@ app.get("/AgentRequests:number", async (req, res) => {
     const result = await RequestModel.find({ To: number });
     res.send(result);
   } else {
-    const result = await RequestModel.find({ Status: filter ,To: number });
+    const result = await RequestModel.find({ Status: filter, To: number });
     res.send(result);
   }
 });

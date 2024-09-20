@@ -35,7 +35,7 @@ const registration = async (req, res) => {
         _id: NewUser._id,
       },
       process.env.SECRET_KEY,
-      { expiresIn: "20min" }
+      { expiresIn: "24h" }
     );
 
     await NewUser.save();
