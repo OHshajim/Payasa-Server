@@ -264,10 +264,10 @@ app.get("/chartOfServices", TokenValidate, async (req, res) => {
 app.get("/AllTransactions", TokenValidate, async (req, res) => {
   const { service } = req.query;
   if (service === "All") {
-    const result = await HistoryModel.find();
+    const result = await HistoryModel.find().sort({Date:-1});
     res.send(result);
   } else {
-    const result = await HistoryModel.find({ Service: service });
+    const result = await HistoryModel.find({ Service: service }).sort({Date:-1});
     res.send(result);
   }
 });
@@ -275,10 +275,10 @@ app.get("/AllTransactions", TokenValidate, async (req, res) => {
 app.get("/AllUsers", TokenValidate, async (req, res) => {
   const { type } = req.query;
   if (type === "All") {
-    const result = await UserModel.find();
+    const result = await UserModel.find().sort({date:-1});
     res.send(result);
   } else {
-    const result = await UserModel.find({ status: type });
+    const result = await UserModel.find({ status: type }).sort({date:-1});
     res.send(result);
   }
 });
@@ -308,19 +308,17 @@ app.patch("/UpdateAccount/:id", TokenValidate, async (req, res) => {
 
 app.delete("/DeleteClient/:id", TokenValidate, async (req, res) => {
   const id = req.params.id;
-  const query = { _id: ObjectId(id) };
-
-  const result = await UserModel.deleteOne(query);
+  const result = await UserModel.deleteOne({ _id: id});
   res.send({ message: "Successfully deleted this Account " }).status(200);
 });
 
 app.get("/AllRequests", TokenValidate, async (req, res) => {
   const { filter } = req.query;
   if (filter === "All") {
-    const result = await RequestModel.find();
+    const result = await RequestModel.find().sort({Date:-1});
     res.send(result);
   } else {
-    const result = await RequestModel.find({ Status: filter });
+    const result = await RequestModel.find({ Status: filter }).sort({Date:-1});
     res.send(result);
   }
 });
@@ -339,8 +337,18 @@ app.get("/AgentRequests/:number", TokenValidate, async (req, res) => {
   }
 });
 
+app.get("/AllFeedbacks",TokenValidate, async (req, res) => {
+  const result = await FeedbacksModel.find().sort({ date: -1 });
+  res.send(result).status(200);
+});
 app.get("/feedbacks", async (req, res) => {
   const result = await FeedbacksModel.find().sort({ date: -1 }).limit(8);
+  res.send(result).status(200);
+});
+app.get("/CashOutTransactions", async (req, res) => {
+  const result = await HistoryModel.find({ Service: "Cash Out" })
+    .sort({ Date: -1 })
+    .limit(10);
   res.send(result).status(200);
 });
 // server running test
