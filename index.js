@@ -10,6 +10,7 @@ const HistoryModel = require("./Models/History");
 const Authentication = require("./Router/Authentication");
 const TokenValidate = require("./Middleware/TokenValidate");
 const RequestModel = require("./Models/MoneyRequest");
+const FeedbacksModel = require("./Models/Feedbacks");
 
 // middleware
 app.use(cors());
@@ -31,7 +32,6 @@ app.get("/userDetails/:id", TokenValidate, async (req, res) => {
 
 app.get("/numberValidate/:number", TokenValidate, async (req, res) => {
   const { number } = req.params;
-  console.log(number);
   const result = await UserModel.findOne({ number: number });
   result
     ? res.send({
@@ -45,7 +45,6 @@ app.get("/numberValidate/:number", TokenValidate, async (req, res) => {
 
 app.get("/addMoneyRequests/:number", TokenValidate, async (req, res) => {
   const { number } = req.params;
-  console.log(number);
   const result = await RequestModel.find({ number: number });
   result
     ? res.send(result)
@@ -108,7 +107,6 @@ app.post("/moneyTransfer/:number", TokenValidate, async (req, res) => {
     const formattedDate = date.toLocaleDateString("en-US");
 
     const toUpdate = await UserModel.updateOne({ _id: to._id }, toDocument);
-    console.log(fromUpdate, toUpdate);
     const statement = new HistoryModel({
       Service: user.service,
       From: from.number,
@@ -117,11 +115,8 @@ app.post("/moneyTransfer/:number", TokenValidate, async (req, res) => {
       Amount: amount,
       Charge: charge,
     });
-    console.log(statement);
 
     if (fromUpdate.modifiedCount && toUpdate.modifiedCount) {
-      console.log("condition true");
-
       await statement.save();
       res.status(201).json({
         message: "Successfully Transferred",
@@ -279,7 +274,6 @@ app.get("/AllTransactions", TokenValidate, async (req, res) => {
 
 app.get("/AllUsers", TokenValidate, async (req, res) => {
   const { type } = req.query;
-  console.log(type);
   if (type === "All") {
     const result = await UserModel.find();
     res.send(result);
@@ -315,7 +309,7 @@ app.patch("/UpdateAccount/:id", TokenValidate, async (req, res) => {
 app.delete("/DeleteClient/:id", TokenValidate, async (req, res) => {
   const id = req.params.id;
   const query = { _id: ObjectId(id) };
-  
+
   const result = await UserModel.deleteOne(query);
   res.send({ message: "Successfully deleted this Account " }).status(200);
 });
@@ -343,6 +337,11 @@ app.get("/AgentRequests/:number", TokenValidate, async (req, res) => {
     const result = await RequestModel.find({ Status: filter, To: number });
     res.send(result);
   }
+});
+
+app.get("/feedbacks", async (req, res) => {
+  const result = await FeedbacksModel.find().sort({ date: -1 }).limit(8);
+  res.send(result).status(200);
 });
 // server running test
 app.get("/", (req, res) => {
