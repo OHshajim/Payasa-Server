@@ -11,6 +11,7 @@ const Authentication = require("./Router/Authentication");
 const TokenValidate = require("./Middleware/TokenValidate");
 const RequestModel = require("./Models/MoneyRequest");
 const FeedbacksModel = require("./Models/Feedbacks");
+const ReportModel = require("./Models/Report");
 
 // middleware
 app.use(cors());
@@ -280,7 +281,7 @@ app.get("/PrivetTransactions/:number", TokenValidate, async (req, res) => {
   try {
     if (service === "All") {
       const result = await HistoryModel.find({
-        $or: [{ From: number }, { To: number }]
+        $or: [{ From: number }, { To: number }],
       })
         .sort({ Date: -1 })
         .limit(10);
@@ -289,7 +290,7 @@ app.get("/PrivetTransactions/:number", TokenValidate, async (req, res) => {
     } else {
       const result = await HistoryModel.find({
         Service: service,
-        $or: [{ From: number }, { To: number }]
+        $or: [{ From: number }, { To: number }],
       })
         .sort({ Date: -1 })
         .limit(10);
@@ -297,10 +298,11 @@ app.get("/PrivetTransactions/:number", TokenValidate, async (req, res) => {
       res.send(result);
     }
   } catch (error) {
-    res.status(500).send({ error: "An error occurred while fetching transactions" });
+    res
+      .status(500)
+      .send({ error: "An error occurred while fetching transactions" });
   }
 });
-
 
 app.get("/AllUsers", TokenValidate, async (req, res) => {
   const { type } = req.query;
@@ -354,6 +356,35 @@ app.get("/AllRequests", TokenValidate, async (req, res) => {
     res.send(result);
   }
 });
+app.get("/PrivetRequest/:number", TokenValidate, async (req, res) => {
+  const { filter } = req.query;
+  const number = req.params.number;
+
+  try {
+    if (filter === "All") {
+      const result = await RequestModel.find({
+        From: number,
+      })
+        .sort({ Date: -1 })
+        .limit(10);
+
+      res.send(result);
+    } else {
+      const result = await RequestModel.find({
+        Status: filter,
+        From: number,
+      })
+        .sort({ Date: -1 })
+        .limit(10);
+
+      res.send(result);
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .send({ error: "An error occurred while fetching transactions" });
+  }
+});
 // For Agent
 
 app.get("/AgentRequests/:number", TokenValidate, async (req, res) => {
@@ -376,6 +407,24 @@ app.get("/AllFeedbacks", TokenValidate, async (req, res) => {
 app.get("/feedbacks", async (req, res) => {
   const result = await FeedbacksModel.find().sort({ date: -1 }).limit(8);
   res.send(result).status(200);
+});
+app.get("/reports", async (req, res) => {
+  const result = await ReportModel.find().sort({ date: -1 });
+  res.send(result).status(200);
+});
+app.post("/feedback", async (req, res) => {
+  const feedbackData = req.body;
+  
+  const feedback = FeedbacksModel(feedbackData);
+  console.log(feedback);
+  await feedback.save();
+  res.send({ message: "Your feedback Successfully Added" }).status(200);
+});
+app.post("/report", async (req, res) => {
+  const reportData = req.body;
+  const report = ReportModel(reportData);
+  await report.save();
+  res.send({ message: "Your feedback Successfully Added" }).status(200);
 });
 app.get("/CashOutTransactions", async (req, res) => {
   const result = await HistoryModel.find({ Service: "Cash Out" })

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const Feedbacks = new Schema({
+const Report = new Schema({
   number: {
     type: Number,
     require: true,
@@ -14,14 +14,18 @@ const Feedbacks = new Schema({
     type: String,
     require: true,
   },
-  rating: {
-    type: Number,
+  title: {
+    type: String,
     require: true,
   },
-  comment: {
+  level: {
+    type: String,
+    require: true,
+  },
+  description: {
     type: String,
     require: true,
   },
 });
-const FeedbacksModel = mongoose.model("Feedbacks", Feedbacks);
-module.exports = FeedbacksModel;
+const ReportModel = mongoose.model("Reports", Report);
+module.exports = ReportModel;
